@@ -1,0 +1,131 @@
+---
+  title: "Lotto_Research"
+author: "Chris Richardson"
+date: "November 7, 2018"
+output: html_document
+---
+  ```{r libraries}
+setwd('C:/Users/crich/Desktop/lottoResearch')
+library(ggplot2)
+# qplot: Find patterns 
+
+library(plotly)
+
+library(readr)
+
+library(stringi) # for stri_sub
+
+library(stringr)
+
+library(taRifx)
+
+library(tidyr)
+
+```
+
+
+```{r Load File}
+lotto = read.csv2(file = 'C:/Users/crich/Desktop/Googz/lottoResearch/Data/cleanedLottoExtended.csv', sep = '\t')
+```
+
+```{r BASIC FINDER}
+winningRows = grep('000',lotto$Winning)
+lotto[winningRows,]
+```
+
+# highest count is ^10. with 187 wins
+```{r BASIC FINDER}
+winningRows = grep('^10.',lotto$Winning)
+lotto[winningRows,]
+```
+
+```{r All  Winnings }
+allWinning <- data.frame(table(lotto$Winning))
+totalOccurance <- sum(allWinning$Freq)
+totalOccurance
+```
+```{r}
+
+allWinningWeight = data.frame(transform(allWinning, weight = Freq/totalOccurance))
+
+winningNumbers = grep('^75.', lotto$Winning )
+lotto[winningNumbers,]
+
+# calculate the weight for the Winning number sequence
+dim(lotto[winningNumbers,])[1]/dim(lotto)[1]
+```
+
+```{r Front Two }
+FrontTwoTable = data.frame(sort(table(lotto$FrontTwo), decreasing =  T))
+
+totalOccurance = sum(FrontTwoTable$Freq)
+weightedFTwoTable = data.frame(transform(FrontTwoTable, weight = Freq/totalOccurance))
+
+# RUN THIS TO SEE FRONT FREQ of FRONT 2! *************************************
+weightedFTwoTable
+winningRows = grep('^88', weightedFTwoTable$Var1)
+weightedFTwoTable[winningRows,]
+```
+
+
+
+```{r}
+lotto[lotto$Winning == 101,]
+```
+
+```{r}
+
+ggplot(lotto[1:50,], aes( x = date, y = Winning)) +
+  geom_point()
+```
+
+
+```{r}
+ggplot(lotto[51:100,], aes( x = date, y = Winning)) +
+  geom_point()
+
+```
+
+
+```{r}
+sort(table(lottoExtended$FrontTwoSum), descending = T)
+
+```
+
+```{r}
+sort(table(lottoExtended$LastTwoSum), descending = T)
+
+```
+
+Table that displays frequency of the comibinations of FrontTwo & RearTwo Sums.
+With the highest frequency being of only 155 out of 16000+ observations, looking at this pattern shows little to no fruit
+```{r}
+lottoExtended$Exp = paste(lottoExtended$FrontTwoSum,lottoExtended$LastTwoSum)
+
+lottoExtended[lottoExtended$FrontTwoSum == 1,]
+sort(table(lottoExtended$Exp), descending = T)
+```
+```{r}
+lottoExtended[1:100,c('FrontTwoSum', 'LastTwoSum')]
+```
+
+
+```{r Midday Plot}
+lottoDF = lotto[1:600,]
+lotto_Midday = lottoDF[lottoDF$Time == 'Midday',]
+
+ggplot(lotto_Midday, aes(x = Serial, y = WinningSum)) +
+  geom_point(aes(colour = factor(Time)))
+```
+
+```{r Evening Plot}
+lotto_Evening = lottoDF[lottoDF$Time == 'Evening',]
+
+ggplot(lotto_Evening, aes(x = Serial, y = WinningSum)) +
+  geom_point(aes(colour = factor(Time)))
+```
+
+It appears that one should pick numbers that have a sum between 5 and 20 to increase their probability of winning
+
+
+

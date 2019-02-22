@@ -1,0 +1,62 @@
+---
+title: "Lotto_Stats"
+author: "Chris Richardson"
+date: "February 21, 2019"
+output: html_document
+---
+
+
+```{r Flat Lotto Algo}
+# out <- as.numeric(strsplit(paste(lotto$cleaned, collapse = ""), "")[[1]])
+# 
+# write(paste(out, sep = ',', collapse = NULL), file = "C:/Users/crich/Desktop/Labo/Data/flatLotto.csv",
+#       append = FALSE, sep = ",")
+```
+
+```{r Load File}
+lotto = read.csv2(file = 'C:/Users/crich/Desktop/Googz/lottoResearch/Data/cleanedLottoExtended.csv', sep = '\t')
+```
+
+```{r Winning Numbers Table}
+winningNumbers = data.frame(sort(table(lotto$Winning)))
+colnames(winningNumbers) <- c('Winning_Series', 'Win_Freq')
+head(winningNumbers[order(winningNumbers$Win_Freq,)])
+
+newdata <- winningNumbers[order(Win_Freq),] 
+sort(winningNumbers)
+```
+
+#simple and quick test to see if a number sequence has won before
+```{r quick test}
+# find syntax uses regex sequence
+winners = grep('^10.', lotto$Winning)
+# prints winning numbers based on above search sequence
+lotto[winners,]
+```
+
+
+weights of each number
+```{r}
+# select which column to count for frequency
+which_column = 1
+colnames(lotto)[which_column] = 'Num'
+
+singleNumberRatioDF = table(lotto$Num)
+
+totalOccurance = sum(lottoFreq$Freq)
+lottoFreq$weight = lottoFreq$Num/as.integer(totalOccurance)
+
+transform(lottoFreq, weight = Freq/totalOccurance)
+
+
+```
+
+```{r}
+
+```
+
+# now we know which numbers are popular
+# I now want to see the frequency based on combinations such as '41.' '4.1' '.41' etc
+
+
+# end of iso research--------------------------------------

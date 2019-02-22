@@ -1,0 +1,142 @@
+---
+title: "Lotto_Cleaner_w_Tables"
+author: "Chris Richardson"
+date: "February 18, 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(stringi)
+library(stringr)
+```
+
+```{r Functions, echo=FALSE}
+
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
+}
+```
+
+
+
+```{r Import Data}
+# Data comes in TXT form from https://www.calottery.com/play/draw-games/daily-3/winning-numbers
+df <-  read.table('C:/Users/crich/Desktop/Googz/lottoResearch/Data/DownloadAllNumbers.txt', sep = '\t')
+```
+
+
+```{r Remove Unnecessary rows}
+# REMOVE FIRST 3 UNNECESSARY ROWS
+# which are unnecessary text which makes R unable to render the table
+lotto <-  data.frame(df[-(1:3),])
+head(lotto, n=5)
+```
+
+
+
+```{r Extract Data}
+# Rename column
+colnames(lotto) <- 'Record'
+
+# remove white space
+lotto$strip <-  gsub("\\s", "", lotto$Record)
+
+lotto$digitsOnly <-  gsub('\\D','', lotto$strip)
+
+# this is built on the constant variable of digits always ending in order 'Serial #, date, and winning #s', wtih a char length of 9, thus we clip anythin unnecessary
+lotto$Serial <-  as.integer(substr(lotto$digitsOnly, 1, nchar(lotto$digitsOnly)-9))
+
+head(lotto, n = 5)
+```
+
+
+
+
+
+```{r Organize Extracted Data}
+# Extract DaY as %b%d%Y
+lotto$stringDate <- str_extract(lotto$Record, '(\\D{9}).+(\\d{2})')
+lotto$stringDate <- substring(lotto$stringDate, 10)
+
+# Remove whitespace from Date
+lotto$stringDate <- gsub("\\s", "", lotto$stringDate)
+
+# insert , between month & day for regex purposes
+lotto$stringDate <-  sub('^(.{3})(.*)', "\\1,\\2", lotto$stringDate)
+
+lotto$stringDate <-  gsub(",", "/", lotto$stringDate)
+
+# convert stringDate into international date standard
+lotto$Date <-  as.Date(lotto$stringDate, format = '%b/%d/%Y' )
+
+# grab string containing date
+lotto$Day <-  gsub('\\d','', lotto$strip)
+# grab exact day
+lotto$Day <-  stri_sub(lotto$Day, 1, 3)
+
+# label rows according to draw time
+lotto$Time[lotto$Serial %% 2 == 1] <-  'Evening'
+lotto$Time[lotto$Serial %% 2 == 0] <- 'Midday'
+
+# grab winning #s
+lotto$Winning <-  as.character(substrRight(lotto$strip,3))
+head(lotto, n=5)
+```
+
+
+
+
+
+```{r Tidy Up DF}
+# Remove 
+lotto <-  lotto[,c(1,4,6:9)]
+
+lotto$One <- as.integer(stri_sub(lotto$Winning, 1, -3))
+lotto$Two <-  as.integer(stri_sub(lotto$Winning, 2, -2))
+lotto$Three <-  as.integer(stri_sub(lotto$Winning, 3, -1))
+
+# column for the total sum of winning numbers
+lotto$WinningSum <- rowSums(lotto[,7:9])
+
+#display columns built from Record column (column number one/lotto[1])
+head(lotto[,c(2:10)], n = 5)
+```
+
+
+
+
+
+```{r Engineered Features}
+# copy original claned DF to new DF for future experimentation
+lottoExtended = lotto
+
+# split winning numbers into two columns consisting of 1&2 and 2&3
+lottoExtended$FrontTwo <- stri_sub(lotto$Winning, 1,2)
+lottoExtended$LastTwo <-  stri_sub(lotto$Winning,2,3)
+
+lottoExtended$FrontTwoSum <-  lotto$One + lotto$Two
+lottoExtended$LastTwoSum <- lotto$Two + lotto$Three
+head(lottoExtended[,c(5:12)])
+```
+
+
+
+
+```{r Save to Files}
+# save basic Lotto Table
+write.table(lotto, file = 'C:/Users/crich/Desktop/Googz/lottoResearch/Data/cleanedLotto.csv', sep = '\t', col.names = T, row.names = F)
+
+# contains extra 3 columns (refer to chunk/cell above)
+write.table(lottoExtended, file = 'C:/Users/crich/Desktop/Googz/lottoResearch/Data/cleanedLottoExtended.csv', sep = '\t', col.names = T, row.names = F)
+
+# TABLEAU FRIENDLY
+#remove first column, which is unnecessary for tableau
+lottoExp = lotto[,c(2:10)]
+write.table(lottoExp, file = 'C:/Users/crich/Desktop/Googz/lottoResearch/Data/cleanedLottoTable.csv', sep = '\t', col.names = T, row.names = F)
+```
+
+
+```{r Check Written Tables}
+
+
+```
