@@ -392,7 +392,7 @@ min(lotto$Date)</code></pre>
 <pre class="r"><code># Convert Date back to Date Time Format
 lotto$Date &lt;- as.Date(lotto$Date)
 max(lotto$Date)</code></pre>
-<pre><code>## [1] &quot;2019-02-15&quot;</code></pre>
+<pre><code>## [1] &quot;2019-02-24&quot;</code></pre>
 <p>So before starting, I want to point out that having the chance of winning with one series gives you a 1 in 1000 chance of winning (1:1000), which would mean your number has a 0.1% chance of winning. If you were to buy $10, you have a 1% chance of winning and so on.</p>
 <pre class="r"><code>1/1000</code></pre>
 <pre><code>## [1] 0.001</code></pre>
@@ -405,7 +405,7 @@ colnames(winningNumbers) &lt;- c('Winning_Series', 'Win_Freq')
 sort(table(lotto$Winning))[990:1000]</code></pre>
 <pre><code>## 
 ## 750 131 135 732 917 390  30 303 655 101 279 
-##  25  26  26  26  26  27  28  28  29  30  31</code></pre>
+##  25  26  26  26  26  27  28  29  29  30  31</code></pre>
 <p>That is interesting, 279 and 101 occur the most frequent.</p>
 <p>I believe if one were to bet $10,the best strategy to win is bet place your bet based on any of the following sequences based on the most wins ?##, #?#, and ##? I.e. 10? are your first two numbers in the hundreds and tens place value, thus the rest would look like 100, 101, 102, etc…</p>
 <p>So here is a Function that finds the highest winnings based on a sequence</p>
@@ -516,7 +516,7 @@ tens_n_ones_winner()</code></pre>
 }
 
 hundred_n_ones_winner()</code></pre>
-<pre><code>## [1] &quot;Highest freq is at , 188,  @ count , 98&quot;</code></pre>
+<pre><code>## [1] &quot;Highest freq is at , 189,  @ count , 98&quot;</code></pre>
 <p>So as we can see, betting $10 on the sequence of 100-109 would supposedly give you the highest chance of winning based on historic records.</p>
 <p>I will someday update this to become an interactive Shiny App, with charts to see what numbers are the runners up for each type of predertimine sequence (front, rear, or split). Plus a way for you to press a button and update the database.</p>
 
