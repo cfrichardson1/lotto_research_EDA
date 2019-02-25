@@ -6,57 +6,178 @@ output: html_document
 ---
 
 
-```{r Flat Lotto Algo}
-# out <- as.numeric(strsplit(paste(lotto$cleaned, collapse = ""), "")[[1]])
-# 
-# write(paste(out, sep = ',', collapse = NULL), file = "C:/Users/crich/Desktop/Labo/Data/flatLotto.csv",
-#       append = FALSE, sep = ",")
+Simple and quick test to see if a number sequence has won before
+```{r quick test}
+# # find syntax uses regex sequence
+# winners = grep('^10.', lotto$Winning)
+# # prints winning numbers based on above search sequence
+# lotto[winners,]
 ```
 
 ```{r Load File}
-lotto = read.csv2(file = 'C:/Users/crich/Desktop/Googz/lottoResearch/Data/cleanedLottoExtended.csv', sep = '\t')
+lotto = read.csv2(file = 'cleanedLottoExtended.csv', sep = '\t')
 ```
 
+
+The first lotto recording in the data set is
+```{r}
+# Convert Date back to Date Time Format
+lotto$Date <- as.Date(lotto$Date)
+min(lotto$Date)
+```
+
+And the latest draw is from
+The first lotto recording in the data set is
+```{r}
+# Convert Date back to Date Time Format
+lotto$Date <- as.Date(lotto$Date)
+max(lotto$Date)
+```
+
+So before starting, I want to point out that having the chance of winning with one series gives you a 1 in 1000 chance of winning (1:1000), which would mean your number has a 0.1% chance of winning.  If you were to buy $10, you have a 1% chance of winning and so on.
+```{r Chance of a $1 ticket}
+1/1000
+```
+```{r Chance of a $10 ticket}
+10/1000
+```
+I am making this EDA with a purposes of just exploring that what if moment, which all sometimes have if we ever though about taking a chance of winning a few bucks through the Lotto.  By no means will you strike rich with Daily 3, with an average pot of a guestimate of $600 dollars (unnoficial [link](https://www.lotterypost.com/game/8/prizes) to yesterdays winning purse).  But what if you could increase your chance by taking a gamble based on historic records and simple math?  That is what this EDA is for.
+
+Let's see the top 10 winning series based on reoccurence
 ```{r Winning Numbers Table}
 winningNumbers = data.frame(sort(table(lotto$Winning)))
 colnames(winningNumbers) <- c('Winning_Series', 'Win_Freq')
-head(winningNumbers[order(winningNumbers$Win_Freq,)])
-
-newdata <- winningNumbers[order(Win_Freq),] 
-sort(winningNumbers)
+sort(table(lotto$Winning))[990:1000]
 ```
+That is interesting, 279 and 101 occur the most frequent.
 
-#simple and quick test to see if a number sequence has won before
-```{r quick test}
+I believe if one were to bet \$10,the best strategy to win is bet place your bet based on any of the following sequences based on the most wins ?##, #?#, and ##?  I.e. 10? are your first two numbers in the hundreds and tens place value, thus the rest would look like 100, 101, 102, etc...
+
+So here is a Function that finds the highest winnings based on a sequence
+```{r Max Winning FN}
 # find syntax uses regex sequence
-winners = grep('^10.', lotto$Winning)
+winners = grep('^10.', winningNumbers$Winning_Series)
 # prints winning numbers based on above search sequence
-lotto[winners,]
+winners <- winningNumbers[winners,]
+sum(winners$Win_Freq)
 ```
+freq_winner uses a regex string to search for how many times that sequence wins
+```{r freq_winner}
+freq_winner <- function (num){
+  # find syntax uses regex sequence
+  winners <- grep(num, winningNumbers$Winning_Series)
+  # prints winning numbers based on above search sequence
+  winners <- winningNumbers[winners,]
+  sum(winners$Win_Freq)
+}
 
-
-weights of each number
-```{r}
-# select which column to count for frequency
-which_column = 1
-colnames(lotto)[which_column] = 'Num'
-
-singleNumberRatioDF = table(lotto$Num)
-
-totalOccurance = sum(lottoFreq$Freq)
-lottoFreq$weight = lottoFreq$Num/as.integer(totalOccurance)
-
-transform(lottoFreq, weight = Freq/totalOccurance)
-
+freq_winner(num = '^10.')
 
 ```
 
-```{r}
+I wanted to quickly find out what is the best sequence to bet on, so I built the following to find the highest amount of wins based on random sequence order.  
+
+```{r Digit Placement}
+digit_placement <- function (num, order = 'front'){
+  if (order == 'front'){
+    # Place needed start anchor(^) & end char(.)
+    x <- c('^',num,'.')
+  }
+  else if (order =='rear') {
+    # Place needed start anchor(^), random char (.) last two random numbers
+    x <- c('^.',num)    
+  }
+  else if (order == 'split'){
+    # Convert num to string
+    num <- toString(num)
+
+    # Split num into a 2-element vector
+    num <- unlist(strsplit(num, split=""))
+    # Grab 1st element
+    first <- strtoi(num[1])
+    # Grab 2nd element
+    last <- strtoi(num[2])
+
+    # Place needed start anchor(^)
+    x <- c('^',first,'.',last)
+    # concatenate vector to string
+    x <- toString(x)
+    # Replace both space and , with ''
+    x <- gsub("\\s|,", "", x)
+      }
+  else {
+    print('Error, Invalid Order INPUT.')
+    break
+  }
+  x <- toString(x)
+  # Replace both space and , with ''
+  x <- gsub("\\s|,", "", x)
+
+  # Search for Winning series based on number and random sequence chosen
+  winners <- grep(x, winningNumbers$Winning_Series)
+  # prints winning numbers based on above search sequence
+  winners <- winningNumbers[winners,]
+  sum(winners$Win_Freq)
+}
+```
+
+
+
+```{r Front Two}
+hundred_n_tens_winner <- function (){
+  # initialist var
+  highest <- 0
+  for (i in seq(10,99)){
+    win_freq <- digit_placement(i, order = 'front')
+
+    if (win_freq > highest){
+      highest <- win_freq
+      seq <- i
+    }
+  }
+  print(toString(c('Highest freq is at ', highest, ' @ count ', seq)))
+}
+
+hundred_n_tens_winner()
 
 ```
 
-# now we know which numbers are popular
-# I now want to see the frequency based on combinations such as '41.' '4.1' '.41' etc
+```{r Rear Two}
+tens_n_ones_winner <- function (){
+  # initialist var
+  highest <- 0
+  for (i in seq(10,99)){
+    win_freq <- digit_placement(i, order = 'rear')
 
+    if (win_freq > highest){
+      highest <- win_freq
+      seq <- i
+    }
+  }
+  print(toString(c('Highest freq is at ', highest, ' @ count ', seq)))
+}
 
-# end of iso research--------------------------------------
+tens_n_ones_winner()
+```
+So the follow algorithym searches for the best combonation based on #?#
+```{r Split}
+hundred_n_ones_winner <- function (){
+  # initialist var
+  highest <- 0
+  for (i in seq(10,99)){
+    win_freq <- digit_placement(i, order = 'split')
+
+    if (win_freq > highest){
+      highest <- win_freq
+      seq <- i
+    }
+  }
+  print(toString(c('Highest freq is at ', highest, ' @ count ', seq)))
+}
+
+hundred_n_ones_winner()
+```
+
+So as we can see, betting $10 on the sequence of 100-109 would supposedly give you the highest chance of winning based on historic records.
+
+I will someday update this to become an interactive Shiny App, with charts to see what numbers are the runners up for each type of predertimine sequence (front, rear, or split).  Plus a way for you to press a button and update the database.

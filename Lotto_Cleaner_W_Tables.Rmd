@@ -88,7 +88,7 @@ head(lotto, n=5)
 
 
 ```{r Tidy Up DF}
-# Remove 
+# Remove
 lotto <-  lotto[,c(1,4,6:9)]
 
 lotto$One <- as.integer(stri_sub(lotto$Winning, 1, -3))
