@@ -2,7 +2,14 @@
 
   #nav {
     font-weight: bold;
-    font-size: 40px;
+    font-size: 30px;
+  }
+
+  #mobile_warning {
+    text-align: left;
+    font-weight: bold;
+    font-size: 20px;
+    font-al
   }
 
 </style>

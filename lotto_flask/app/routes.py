@@ -4,9 +4,9 @@ from flask import redirect, render_template, request, url_for
 
 @app.route('/', methods=["GET"])
 def home():
-	return render_template('lotto_data_engineering.html', title_bar = 'Lotto Data Cleaning')
+	return render_template('Lotto_Cleaner2.html', title_bar = 'Lotto Data Cleaning')
 
 
-@app.route('/quick_lotto_eda.html')
+@app.route('/Lotto_EDA.html')
 def notebook():
-	return render_template('quick_lotto_eda.html', title_bar ='Quick EDA')
+	return render_template('Lotto_EDA.html', title_bar ='Lotto EDA')
